@@ -27,7 +27,7 @@ def prepare_folder_structure(root_dir, remove_if_exists=True):
     Path(root_dir / 'valid' / '1').mkdir(parents=True)
 
 
-def split_fasta_to_txts(fasta_file, root_dir, label, train_ratio=0.7):
+def split_fasta_to_txts(fasta_file, root_dir, label, train_ratio=0.7, kmer=0):
 
     root_dir = Path(root_dir)
 
@@ -36,6 +36,8 @@ def split_fasta_to_txts(fasta_file, root_dir, label, train_ratio=0.7):
         for record in SeqIO.parse(handle, "fasta"):
             id = record.id
             seq = str(record.seq)
+            if kmer > 0:
+                seq = ' '.join(seq[i:i+kmer] for i in range(0,len(seq),kmer))
 
             filename = id + '.txt'
             if random.random() < train_ratio:
