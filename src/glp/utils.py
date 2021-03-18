@@ -13,7 +13,7 @@ def rm_tree(path):
             p.rmdir()
 
 
-def prepare_folder_structure(root_dir, remove_if_exists=True):
+def prepare_folder_structure(root_dir, remove_if_exists=True, labels=['0', '1']):
 
     root_dir = Path(root_dir)
 
@@ -21,10 +21,9 @@ def prepare_folder_structure(root_dir, remove_if_exists=True):
         if root_dir.exists():
             rm_tree(root_dir)
 
-    Path(root_dir / 'train' / '0').mkdir(parents=True)
-    Path(root_dir / 'train' / '1').mkdir(parents=True)
-    Path(root_dir / 'valid' / '0').mkdir(parents=True)
-    Path(root_dir / 'valid' / '1').mkdir(parents=True)
+    for label in labels:
+        Path(root_dir / 'train' / label).mkdir(parents=True)
+        Path(root_dir / 'valid' / label).mkdir(parents=True)
 
 
 def split_fasta_to_txts(fasta_file, root_dir, label, train_ratio=0.7, kmer=0):
