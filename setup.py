@@ -18,6 +18,7 @@ setup(
     install_requires=[
         "biopython>=1.79",
         "genomic_benchmarks>=0.0.6",
-        "torch>=1.10.0"
+        "torch>=1.10.0",
+        "torchtext>=0.11.1"
     ],
 )
