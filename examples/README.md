@@ -1,2 +1,3 @@
-- [Genomic_Language_Model.ipynb](Genomic_Language_Model.ipynb): Training language model on DNA sequences in fastai
 - [subwords_tokenization](subwords_tokenization): Exploring different sizes of vacabulary for subword tokenization of DNA sequences. In fastai.
+- [tokenization_comparison](tokenization_comparison): Comparison of different tokenization techniques on fixed [CNN architecture](https://github.com/ML-Bioinfo-CEITEC/genomic_benchmarks/blob/main/src/genomic_benchmarks/models/torch.py) and multiple datasets from [genomic benchmarks package](https://github.com/ML-Bioinfo-CEITEC/genomic_benchmarks). In pytorch.
+- [Genomic_Language_Model.ipynb](Genomic_Language_Model.ipynb): Training language model on DNA sequences in fastai
