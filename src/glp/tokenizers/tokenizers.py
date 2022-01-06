@@ -3,11 +3,11 @@ import pandas as pd
 
 def get_tokenizer(name):
     if name == 'character':
-        return CharacterTokenizer
+        return CharacterTokenizer()
     elif name == 'subword':
-        return SubwordTokenizer
+        return SubwordTokenizer()
     elif name == 'kmer':
-        return KmerTokenizer
+        return KmerTokenizer()
     else:
         raise ValueError('Tokenizer ' + name + ' not supported')
 
@@ -21,7 +21,7 @@ class CharacterTokenizer():
         else:
             return (self.__tokenize_str(t) for t in items)
 
-    def train(self, train_dset):
+    def train(self, train_dset, **kwargs):
         pass
 
     def __tokenize_str(self, t):
@@ -41,7 +41,7 @@ class SubwordTokenizer():
         else:
             return (self.__tokenize_str([t]) for t in items)
 
-    def train(self, train_dset, vocab_size, prefix = 'sample'):
+    def train(self, train_dset, vocab_size, prefix = 'sample', **kwargs):
         
         self.vocab_size = vocab_size
         df = pd.DataFrame([x[0] for x in train_dset])
@@ -54,8 +54,8 @@ class SubwordTokenizer():
         return list(self.tokenizer(t))[0]
 
 class KmerTokenizer():
-    def __init__(self, kmer = 4, **kwargs):
-        self.kmer = kmer
+    def __init__(self, **kwargs):
+        pass
 
     def __call__(self, items):
         if isinstance(items, str):
@@ -69,5 +69,5 @@ class KmerTokenizer():
     def __kmers(s, k):
         return [s[i:i + k] for i in range(0, len(s), k) if i + k <= len(s)]
 
-    def train(self, train_dset):
-        pass
+    def train(self, train_dset, kmer = 4, **kwargs):
+        self.kmer = kmer
