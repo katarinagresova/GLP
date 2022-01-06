@@ -48,6 +48,7 @@ def check_config(config):
         "use_padding": bool,
         "run_on_gpu": bool,
         "dataset": str,
+        "tokenizer": str,
         "number_of_classes": int,
         "dataset_version": int,
         "force_download": bool,
