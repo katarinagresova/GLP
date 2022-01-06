@@ -66,7 +66,7 @@ class KmerTokenizer():
     def __tokenize_str(self, t):
         return self.__kmers(t, self.kmer)
 
-    def __kmers(s, k):
+    def __kmers(self, s, k):
         return [s[i:i + k] for i in range(0, len(s), k) if i + k <= len(s)]
 
     def train(self, train_dset, kmer = 4, **kwargs):
