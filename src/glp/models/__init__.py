@@ -1,1 +1,1 @@
-from models.cnn import CNN
+from glp.models.cnn import CNN
