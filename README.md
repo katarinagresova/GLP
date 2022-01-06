@@ -1,1 +1,3 @@
-# genomic_ML_playground
+# Genomic Language Processing
+
+Tools and experiments for exploring language of life.
