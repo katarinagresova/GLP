@@ -86,8 +86,9 @@ class CNN(nn.Module):
         for x, y in dataloader:
             optimizer.zero_grad()
             pred = self(x)
-            y = y.unsqueeze(1)
-            y = y.float()
+            if y.shape != pred.shape:
+                y = y.unsqueeze(1)
+                y = y.float()
             loss = self.loss(pred, y)
             loss.backward()
             optimizer.step()
@@ -101,8 +102,9 @@ class CNN(nn.Module):
         with torch.no_grad():
             for X, y in dataloader:
                 pred = self(X)
-                y = y.unsqueeze(1)
-                y = y.float()
+                if y.shape != pred.shape:
+                    y = y.unsqueeze(1)
+                    y = y.float()
                 train_loss += self.loss(pred, y).item()
                 correct += (torch.round(pred) == y).sum().item()
 
@@ -126,8 +128,9 @@ class CNN(nn.Module):
         with torch.no_grad():
             for X, y in dataloader:
                 pred = self(X)
-                y = y.unsqueeze(1)
-                y = y.float()
+                if y.shape != pred.shape:
+                    y = y.unsqueeze(1)
+                    y = y.float()
                 test_loss += self.loss(pred, y).item()
                 correct += (torch.round(pred) == y).sum().item()
                 p += (y == positive_label).sum().item() 
