@@ -82,7 +82,7 @@ class CNN(nn.Module):
         x = self.output_activation(x)
         return x
 
-    def train_loop(self, dataloader, optimizer, val_dataset):
+    def train_loop(self, dataloader, optimizer, val_dataloader):
         for x, y in dataloader:
             optimizer.zero_grad()
             pred = self(x)
@@ -93,43 +93,13 @@ class CNN(nn.Module):
             loss.backward()
             optimizer.step()
 
-        #       train acc
-        # todo: optimize counting of acc
-        size = dataloader.dataset.__len__()
-        num_batches = len(dataloader)
-        train_loss, correct = 0, 0
 
-        with torch.no_grad():
-            for X, y in dataloader:
-                pred = self(X)
-                if y.shape != pred.shape:
-                    y = y.unsqueeze(1)
-                    y = y.float()
-                train_loss += self.loss(pred, y).item()
-                correct += (torch.round(pred) == y).sum().item()
-
-        train_loss /= num_batches
-        correct /= size
-
-        if val_dataset is not None:
-            val_loss, val_correct = 0, 0
-
-            with torch.no_grad():
-                for X, y in dataloader:
-                    pred = self(X)
-                    if y.shape != pred.shape:
-                        y = y.unsqueeze(1)
-                        y = y.float()
-                    val_loss += self.loss(pred, y).item()
-                    val_correct += (torch.round(pred) == y).sum().item()
-
-            val_loss /= num_batches
-            val_correct /= size
-
-            print(f"Train metrics: \n Accuracy: {(100*correct):>0.1f}%, Avg loss: {train_loss:>8f} Val accuracy: {(100*val_correct):>0.1f}%, Val avg loss: {val_loss:>8f} \n")
-
+        train_loss, train_correct = self._eval(dataloader=dataloader)
+        if val_dataloader != None:
+            val_loss, val_correct = self._eval(dataloader=val_dataloader)
+            print(f"Train metrics: \n Accuracy: {(100*train_correct):>0.1f}%, Avg loss: {train_loss:>8f} Val accuracy: {(100*val_correct):>0.1f}%, Val avg loss: {val_loss:>8f} \n")
         else:
-            print(f"Train metrics: \n Accuracy: {(100*correct):>0.1f}%, Avg loss: {train_loss:>8f} \n")
+            print(f"Train metrics: \n Accuracy: {(100*train_correct):>0.1f}%, Avg loss: {train_loss:>8f} \n")
 
 
     def train(self, dataloader, epochs, val_datdaloader = None):
@@ -137,6 +107,25 @@ class CNN(nn.Module):
         for t in range(epochs):
             print(f"Epoch {t}")
             self.train_loop(dataloader, optimizer, val_datdaloader)
+
+    def _eval(self, dataloader):
+        size = dataloader.dataset.__len__()
+        num_batches = len(dataloader)
+        loss, correct = 0, 0
+
+        with torch.no_grad():
+            for X, y in dataloader:
+                pred = self(X)
+                if y.shape != pred.shape:
+                    y = y.unsqueeze(1)
+                    y = y.float()
+                loss += self.loss(pred, y).item()
+                correct += (torch.round(pred) == y).sum().item()
+
+        loss /= num_batches
+        correct /= size
+
+        return loss, correct
 
 # TODO: update for multiclass classification datasets
     def test(self, dataloader, positive_label = 1):
