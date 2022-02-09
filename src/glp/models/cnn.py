@@ -82,39 +82,50 @@ class CNN(nn.Module):
         x = self.output_activation(x)
         return x
 
-    def train_loop(self, dataloader, optimizer):
+    def train_loop(self, dataloader, optimizer, val_dataloader):
         for x, y in dataloader:
             optimizer.zero_grad()
             pred = self(x)
-            y = y.unsqueeze(1)
-            y = y.float()
+            if y.shape != pred.shape:
+                y = y.unsqueeze(1)
+                y = y.float()
             loss = self.loss(pred, y)
             loss.backward()
             optimizer.step()
 
-        #       train acc
-        # todo: optimize counting of acc
+
+        train_loss, train_correct = self._eval(dataloader=dataloader)
+        if val_dataloader != None:
+            val_loss, val_correct = self._eval(dataloader=val_dataloader)
+            print(f"Train metrics: \n Accuracy: {(100*train_correct):>0.1f}%, Avg loss: {train_loss:>8f} Val accuracy: {(100*val_correct):>0.1f}%, Val avg loss: {val_loss:>8f} \n")
+        else:
+            print(f"Train metrics: \n Accuracy: {(100*train_correct):>0.1f}%, Avg loss: {train_loss:>8f} \n")
+
+
+    def train(self, dataloader, epochs, val_datdaloader = None):
+        optimizer = torch.optim.Adam(self.parameters())
+        for t in range(epochs):
+            print(f"Epoch {t}")
+            self.train_loop(dataloader, optimizer, val_datdaloader)
+
+    def _eval(self, dataloader):
         size = dataloader.dataset.__len__()
         num_batches = len(dataloader)
-        train_loss, correct = 0, 0
+        loss, correct = 0, 0
 
         with torch.no_grad():
             for X, y in dataloader:
                 pred = self(X)
-                y = y.unsqueeze(1)
-                y = y.float()
-                train_loss += self.loss(pred, y).item()
+                if y.shape != pred.shape:
+                    y = y.unsqueeze(1)
+                    y = y.float()
+                loss += self.loss(pred, y).item()
                 correct += (torch.round(pred) == y).sum().item()
 
-        train_loss /= num_batches
+        loss /= num_batches
         correct /= size
-        print(f"Train metrics: \n Accuracy: {(100*correct):>0.1f}%, Avg loss: {train_loss:>8f} \n")
 
-    def train(self, dataloader, epochs):
-        optimizer = torch.optim.Adam(self.parameters())
-        for t in range(epochs):
-            print(f"Epoch {t}")
-            self.train_loop(dataloader, optimizer)
+        return loss, correct
 
 # TODO: update for multiclass classification datasets
     def test(self, dataloader, positive_label = 1):
@@ -126,8 +137,9 @@ class CNN(nn.Module):
         with torch.no_grad():
             for X, y in dataloader:
                 pred = self(X)
-                y = y.unsqueeze(1)
-                y = y.float()
+                if y.shape != pred.shape:
+                    y = y.unsqueeze(1)
+                    y = y.float()
                 test_loss += self.loss(pred, y).item()
                 correct += (torch.round(pred) == y).sum().item()
                 p += (y == positive_label).sum().item() 
