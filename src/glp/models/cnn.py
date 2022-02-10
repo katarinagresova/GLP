@@ -1,9 +1,9 @@
 import torch
-from torch import nn
+from torch import dropout, nn
 
 # A simple CNN model inspired by https://github.com/ML-Bioinfo-CEITEC/genomic_benchmarks/blob/main/src/genomic_benchmarks/models/torch.py
 class CNN(nn.Module):
-    def __init__(self, number_of_classes, vocab_size, embedding_dim, input_len):
+    def __init__(self, number_of_classes, vocab_size, embedding_dim, input_len, dropout):
         super(CNN, self).__init__()
         if number_of_classes == 2:
             number_of_output_neurons = 1
@@ -15,71 +15,111 @@ class CNN(nn.Module):
             # loss = torch.nn.CrossEntropyLoss()
             # output_activation = nn.Softmax(dim=)
 
-        self.embeddings = nn.Embedding(vocab_size, embedding_dim)
-        self.conv1 = nn.Conv1d(in_channels=embedding_dim, out_channels=16, kernel_size=8, bias=True)
-        self.norm1 = nn.BatchNorm1d(16)
-        self.relu = nn.ReLU()
-        self.pool1 = nn.MaxPool1d(2)
+        self.model = nn.Sequential(
+            nn.Embedding(vocab_size, embedding_dim),
 
-        self.conv2 = nn.Conv1d(in_channels=16, out_channels=8, kernel_size=8, bias=True)
-        self.norm2 = nn.BatchNorm1d(8)
-        self.pool2 = nn.MaxPool1d(2)
+            nn.Conv1d(in_channels=embedding_dim, out_channels=16, kernel_size=8, bias=True),
+            nn.ReLU(),
+            nn.BatchNorm1d(),
+            nn.MaxPool1d(2),
+            nn.Dropout(dropout),
 
-        self.conv3 = nn.Conv1d(in_channels=8, out_channels=4, kernel_size=8, bias=True)
-        self.norm3 = nn.BatchNorm1d(4)
-        self.pool3 = nn.MaxPool1d(2)
+            nn.Conv1d(in_channels=16, out_channels=8, kernel_size=8, bias=True),
+            nn.ReLU(),
+            nn.BatchNorm1d(),
+            nn.MaxPool1d(2),
+            nn.Dropout(dropout),
 
-        #         compute output shape of conv layers
-        self.flatten = nn.Flatten()
-        self.lin1 = nn.Linear(self.count_flatten_size(input_len), 512)
-        self.lin2 = nn.Linear(512, number_of_output_neurons)
-        self.output_activation = output_activation
-        self.loss = loss
+            nn.Conv1d(in_channels=8, out_channels=4, kernel_size=8, bias=True),
+            nn.ReLU(),
+            nn.BatchNorm1d(),
+            nn.MaxPool1d(2),
+            nn.Dropout(dropout),
+
+            nn.Conv1d(in_channels=4, out_channels=4, kernel_size=4, bias=True),
+            nn.ReLU(),
+            nn.BatchNorm1d(),
+            nn.MaxPool1d(2),
+            nn.Dropout(dropout),
+
+            nn.Flatten(),
+            nn.Linear(self.count_flatten_size(input_len), 512),
+            nn.Dropout(dropout),
+            nn.Linear(512, number_of_output_neurons)
+            
+
+        )
 
     def count_flatten_size(self, input_len):
+
+
+
+
+
+
         zeros = torch.zeros([1, input_len], dtype=torch.long)
+
+        x = nn.Embedding(vocab_size, embedding_dim),
+
+        nn.Conv1d(in_channels=embedding_dim, out_channels=16, kernel_size=8, bias=True),
+        nn.ReLU(),
+        nn.BatchNorm1d(),
+        nn.MaxPool1d(2),
+        nn.Dropout(dropout),
+
+        nn.Conv1d(in_channels=16, out_channels=8, kernel_size=8, bias=True),
+        nn.ReLU(),
+        nn.BatchNorm1d(),
+        nn.MaxPool1d(2),
+        nn.Dropout(dropout),
+
+        nn.Conv1d(in_channels=8, out_channels=4, kernel_size=8, bias=True),
+        nn.ReLU(),
+        nn.BatchNorm1d(),
+        nn.MaxPool1d(2),
+        nn.Dropout(dropout),
+
+        nn.Conv1d(in_channels=4, out_channels=4, kernel_size=4, bias=True),
+        nn.ReLU(),
+        nn.BatchNorm1d(),
+        nn.MaxPool1d(2),
+        nn.Dropout(dropout),
+
+        nn.Flatten(),
+        nn.Linear(self.count_flatten_size(input_len), 512),
+        nn.Dropout(dropout),
+        nn.Linear(512, number_of_output_neurons)
+
+
+
         x = self.embeddings(zeros)
         x = x.transpose(1, 2)
         x = self.conv1(x)
         x = self.norm1(x)
         x = self.relu(x)
+        x = self.dropout(x)
         x = self.pool1(x)
 
         x = self.conv2(x)
         x = self.norm2(x)
         x = self.relu(x)
+        x = self.dropout(x)
         x = self.pool2(x)
 
         x = self.conv3(x)
         x = self.norm3(x)
         x = self.relu(x)
+        x = self.dropout(x)
         x = self.pool3(x)
 
         x = self.flatten(x)
+        x = self.dropout(x)
         return x.size()[1]
 
     def forward(self, x):
-        x = self.embeddings(x)
-        x = x.transpose(1, 2)
-        x = self.conv1(x)
-        x = self.norm1(x)
-        x = self.relu(x)
-        x = self.pool1(x)
-
-        x = self.conv2(x)
-        x = self.norm2(x)
-        x = self.relu(x)
-        x = self.pool2(x)
-
-        x = self.conv3(x)
-        x = self.norm3(x)
-        x = self.relu(x)
-        x = self.pool3(x)
-
-        x = self.flatten(x)
-        x = self.lin1(x)
-        x = self.lin2(x)
+        x = self.model(x)
         x = self.output_activation(x)
+
         return x
 
     def train_loop(self, dataloader, optimizer, val_dataloader):
