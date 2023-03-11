@@ -1,9 +1,14 @@
 import papermill as pm
 from genomic_benchmarks.data_check import list_datasets
 
-VOCAB_SIZES = [64, 128, 256, 512, 1024, 2048]
-KMERS = [2, 3, 4, 5, 6, 7]
-DATASETS = list_datasets()
+VOCAB_SIZES = [64, 512, 2048]
+DATASETS = [
+   'demo_coding_vs_intergenomic_seqs',
+   'human_nontata_promoters',
+   'human_enhancers_cohn',
+   'demo_human_or_worm',
+   'human_enhancers_ensembl'
+] # using only human datasets for now, because subword vocabulary was pretrained on human cDNA
 
 for dataset in DATASETS:
 

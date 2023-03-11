@@ -1,5 +1,6 @@
 from torchtext.data.functional import generate_sp_model, load_sp_model, sentencepiece_tokenizer
 import pandas as pd
+from utils import download
 
 def get_tokenizer(name):
     if name == 'character':
@@ -44,10 +45,15 @@ class SubwordTokenizer():
     def train(self, train_dset, vocab_size, prefix = 'sample', **kwargs):
         
         self.vocab_size = vocab_size
-        df = pd.DataFrame([x[0] for x in train_dset])
-        df.to_csv('sample.csv', index=False, header=False)
-        generate_sp_model('sample.csv', vocab_size=vocab_size, model_prefix=prefix)
-        vocab_tokenizer = load_sp_model(prefix + ".model")
+        sp_model_path = download(
+            'https://github.com/katarinagresova/GLP/raw/main/experiments/subwords_tokenization/tmp/vocab' + str(vocab_size) + '/spm.model',
+            dest_folder = ''
+        )
+        #df = pd.DataFrame([x[0] for x in train_dset])
+        #df.to_csv('sample.csv', index=False, header=False)
+        #generate_sp_model('sample.csv', vocab_size=vocab_size, model_prefix=prefix)
+        #vocab_tokenizer = load_sp_model(prefix + ".model")
+        vocab_tokenizer = load_sp_model(sp_model_path)
         self.tokenizer = sentencepiece_tokenizer(sp_model=vocab_tokenizer)
 
     def __tokenize_str(self, t):

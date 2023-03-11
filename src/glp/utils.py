@@ -1,6 +1,8 @@
 from Bio import SeqIO
 from pathlib import Path
 import random
+import os
+import requests
 
 
 def rm_tree(path):
@@ -45,3 +47,23 @@ def split_fasta_to_txts(fasta_file, root_dir, label, train_ratio=0.7, kmer=0):
                 file_path = Path(root_dir / 'valid' / label / filename)
 
             file_path.write_text(seq)
+
+def download(url: str, dest_folder: str):
+    if not os.path.exists(dest_folder):
+        os.makedirs(dest_folder)  # create folder if it does not exist
+
+    filename = url.split('/')[-1].replace(" ", "_")  # be careful with file names
+    file_path = os.path.join(dest_folder, filename)
+
+    r = requests.get(url, stream=True)
+    if r.ok:
+        print("saving to", os.path.abspath(file_path))
+        with open(file_path, 'wb') as f:
+            for chunk in r.iter_content(chunk_size=1024 * 8):
+                if chunk:
+                    f.write(chunk)
+                    f.flush()
+                    os.fsync(f.fileno())
+        return file_path
+    else:  # HTTP status code 4XX/5XX
+        print("Download failed: status code {}\n{}".format(r.status_code, r.text))
